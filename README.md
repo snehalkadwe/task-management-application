@@ -47,3 +47,11 @@ php artisan serve
 ## Usage
 
 Visit `http://127.0.0.1:8000` in your browser to access the application.
+
+## Test Application
+
+```sh
+php artisan test
+```
+
+This will run all the tests in the application.
