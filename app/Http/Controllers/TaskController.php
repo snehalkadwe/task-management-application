@@ -17,21 +17,25 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        // Generate unique cache key based on user and request parameters
-        $cacheKey = 'tasks_' . auth()->user()->id . '_' . md5(json_encode($request->all()));
-
-        // Retrieve tasks from cache or query the database if cache is missing
-        // $tasks = Cache::remember($cacheKey, 300, function () use ($request) {
-        $tasks = Task::with('user')
-            ->where('user_id', auth()->user()->id)
-            ->when($request->filled('status'), fn($query) => $query->where('status', $request->status))
-            ->orderBy($request->input('sort_by', 'due_date'), $request->input('sort_order', 'desc'))
-            ->paginate(5);
-        // });
+        if ($request->filled('status') || $request->filled('sort_by')) {
+            // Skip cache and fetch directly if filters or sorting are applied
+            $tasks = Task::where('user_id', auth()->id())
+                ->when($request->filled('status'), fn($query) => $query->where('status', $request->status))
+                ->orderBy($request->input('sort_by', 'due_date'), $request->input('sort_order', 'desc'))
+                ->latest()
+                ->paginate(5);
+        } else {
+            // Use cache only for default task listing
+            $tasks = Cache::remember('tasks_' . auth()->id(), 60, function () {
+                return Task::where('user_id', auth()->id())
+                    ->orderBy('due_date', 'desc')
+                    ->latest()
+                    ->paginate(5);
+            });
+        }
 
         return view('tasks.index', compact('tasks'));
     }
-
 
     /**
      * Show the form for creating a new resource.
@@ -54,6 +58,7 @@ class TaskController extends Controller
             'status' => 'pending',
             'user_id' => Auth::user()->id,
         ]);
+        $this->clearCache();
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
     }
 
@@ -88,6 +93,7 @@ class TaskController extends Controller
             'description' => $request->description,
             'due_date' => $request->due_date
         ]);
+        $this->clearCache();
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully');
     }
 
@@ -98,6 +104,8 @@ class TaskController extends Controller
     {
         Gate::authorize('delete', $task);
         $task->delete();
+
+        $this->clearCache();
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully');
     }
 
@@ -116,7 +124,15 @@ class TaskController extends Controller
         if ($task->status === 'completed') {
             event(new TaskCompleted($task));
         }
-
+        $this->clearCache();
         return redirect()->route('tasks.index')->with('success', 'Task status updated successfully');
+    }
+
+    /**
+     * Search tasks by title.
+     */
+    public function clearCache()
+    {
+        Cache::forget('tasks_' . auth()->id());
     }
 }

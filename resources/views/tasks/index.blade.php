@@ -69,6 +69,7 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @if(count($tasks) > 0)
                         @foreach($tasks as $task)
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 border">{{ $task->title }}</td>
@@ -78,9 +79,10 @@
                             </td>
                             <td class="px-4 py-3 border">{{ $task->due_date->format('j F, Y') }}</td>
                             <td class="px-4 py-3 border">
-                                <span class="px-2 py-1 rounded text-white text-xs
-                                    {{ $task->status == 'pending' ? 'bg-yellow-500' :
-                                    ($task->status == 'in-progress' ? 'bg-blue-500' : 'bg-green-500') }}">
+                                <span
+                                    class="px-2 py-1 rounded text-white text-xs
+                                                            {{ $task->status == 'pending' ? 'bg-yellow-500' :
+                                                            ($task->status == 'in-progress' ? 'bg-blue-500' : 'bg-green-500') }}">
                                     {{ ucfirst($task->status) }}
                                 </span>
                             </td>
@@ -111,6 +113,7 @@
                             </td>
                         </tr>
                         @endforeach
+                        @endif
                     </tbody>
                 </table>
             </div>

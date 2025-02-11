@@ -39,9 +39,8 @@ class SendTaskCompletedNotificationToUser extends Notification
     {
         return (new MailMessage)
             ->subject('Task Completed')
-            ->greeting('Hello ' . $notifiable->name)
-            ->line('You have completed your ' . $this->task->title . ' task.')
-            ->action('Notification Action', url('/'));
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line('You have completed your task: ' . $this->task->title);
     }
 
     /**
