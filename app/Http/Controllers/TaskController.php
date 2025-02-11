@@ -129,7 +129,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Search tasks by title.
+     * Clear cache for tasks listing.
      */
     public function clearCache()
     {
