@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Events\TaskCompleted;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use App\Listeners\SendTaskCompletedNotification;
 
@@ -22,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Schema::defaultStringLength(191);
+
         Event::listen(
             TaskCompleted::class,
             SendTaskCompletedNotification::class,
